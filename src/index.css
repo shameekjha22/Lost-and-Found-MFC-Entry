@@ -1,0 +1,65 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  * {
+    box-sizing: border-box;
+    /* Hide native cursor — PacMan takes over */
+    cursor: none !important;
+  }
+
+  body {
+    margin: 0;
+    background-color: #000000;
+    color: #FFE000;
+    font-family: 'VT323', monospace;
+    /* Retro dot-grid maze background */
+    background-image: radial-gradient(circle, #1a1a6e 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+  }
+
+  /* Pixel-perfect scrollbar */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: #000; border-left: 2px solid #1f1f6e; }
+  ::-webkit-scrollbar-thumb { background: #FFE000; border-radius: 0; }
+  ::-webkit-scrollbar-thumb:hover { background: #FFD700; }
+
+  /* Make selects dark */
+  select option {
+    background-color: #0d0d1a;
+    color: #FFE000;
+  }
+
+  /* Date input color scheme */
+  input[type="date"] {
+    color-scheme: dark;
+  }
+}
+
+@layer components {
+  /* Reusable maze-border card */
+  .maze-card {
+    background-color: #0d0d1a;
+    border: 2px solid #1f1f6e;
+    border-radius: 0px;
+  }
+
+  /* Glowing yellow text */
+  .glow-yellow {
+    text-shadow: 0 0 8px #FFE000, 0 0 20px #FFE000aa;
+  }
+
+  /* Pixel button base */
+  .btn-pixel {
+    font-family: 'Press Start 2P', cursive;
+    font-size: 0.55rem;
+    letter-spacing: 0.05em;
+    border-radius: 0;
+    transition: all 0.1s;
+    image-rendering: pixelated;
+  }
+  .btn-pixel:active {
+    transform: translateY(2px);
+  }
+}
