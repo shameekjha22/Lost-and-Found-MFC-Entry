@@ -64,22 +64,29 @@ function formatDate(dateStr) {
 
 /**
  * Individual item card — retro PacMan arcade style.
- * Clicking available (Lost/Found) items triggers the claim flow.
- * Already Claimed items show a locked badge and cannot be clicked.
+ * - For FOUND items: "CLICK TO CLAIM ITEM" (opens claim flow with Reg No & Room No).
+ * - For LOST items: "I FOUND THIS ITEM" (opens report found flow).
+ * - For CLAIMED items: Locked & non-clickable.
  */
-export default function ItemCard({ item, onSelect }) {
-  const { id, name, category, location, date, status, image, description, claimedBy } = item;
+export default function ItemCard({ item, onClaimClick, onReportFoundClick }) {
+  const { id, name, category, location, date, status, image, description, claimedBy, founder } = item;
   const imageSrc = image || 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80';
   const { badge, glow, ghost } = getStatusStyles(status);
   const isClaimed = status === 'Claimed';
+  const isFound = status === 'Found';
+  const isLost = status === 'Lost';
+
+  const handleClick = () => {
+    if (isFound && onClaimClick) {
+      onClaimClick(item);
+    } else if (isLost && onReportFoundClick) {
+      onReportFoundClick(item);
+    }
+  };
 
   return (
     <article
-      onClick={() => {
-        if (!isClaimed && onSelect) {
-          onSelect(item);
-        }
-      }}
+      onClick={handleClick}
       className={`
         bg-pacman-card border-2 border-pacman-border overflow-hidden
         transition-all duration-200 flex flex-col group
@@ -148,7 +155,7 @@ export default function ItemCard({ item, onSelect }) {
           </p>
         )}
 
-        {/* Claimed Details banner if claimed */}
+        {/* Claimed Details banner */}
         {isClaimed && claimedBy && (
           <div className="mb-3 p-2 bg-pacman-pinky/10 border border-pacman-pinky/30 font-vt text-sm text-pacman-pinky">
             <p>✓ Claimed by: {claimedBy.name || 'Student'} ({claimedBy.regNo})</p>
@@ -156,7 +163,15 @@ export default function ItemCard({ item, onSelect }) {
           </div>
         )}
 
-        {/* Meta & Claim CTA */}
+        {/* Found Handover banner */}
+        {isFound && founder && (
+          <div className="mb-3 p-2 bg-pacman-inky/10 border border-pacman-inky/30 font-vt text-sm text-pacman-inky">
+            <p>ℹ Handed over at: {founder.depositedAt}</p>
+            <p>Found by: {founder.name} ({founder.regNo})</p>
+          </div>
+        )}
+
+        {/* Meta & Action CTA */}
         <div className="mt-auto pt-3 border-t border-pacman-border/50 flex flex-col gap-2">
           <div className="flex items-center justify-between text-base font-vt">
             <div className="flex items-center gap-1.5 text-pacman-inky truncate">
@@ -175,13 +190,29 @@ export default function ItemCard({ item, onSelect }) {
               <div className="w-full text-center py-1.5 font-pixel text-[0.4rem] text-gray-500 border border-gray-800 bg-gray-950">
                 LOCKED / CLAIMED
               </div>
-            ) : (
+            ) : isFound ? (
               <button
                 type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onClaimClick) onClaimClick(item);
+                }}
                 className="w-full py-1.5 font-pixel text-[0.45rem] bg-black text-pacman-yellow border border-pacman-border group-hover:border-pacman-yellow group-hover:bg-pacman-yellow group-hover:text-black transition-colors flex items-center justify-center gap-1.5"
               >
                 <span>🔑</span>
-                <span>CLICK TO CLAIM ITEM</span>
+                <span>CLAIM THIS ITEM</span>
+              </button>
+            ) : (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (onReportFoundClick) onReportFoundClick(item);
+                }}
+                className="w-full py-1.5 font-pixel text-[0.45rem] bg-black text-pacman-inky border border-pacman-inky/60 group-hover:border-pacman-inky group-hover:bg-pacman-inky group-hover:text-black transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>📢</span>
+                <span>REPORT FOUND</span>
               </button>
             )}
           </div>

@@ -7,6 +7,7 @@ import FilterPanel from './components/FilterPanel';
 import ItemGrid from './components/ItemGrid';
 import PostItemForm from './components/PostItemForm';
 import ClaimModal from './components/ClaimModal';
+import ReportFoundModal from './components/ReportFoundModal';
 import RetroCursor from './components/RetroCursor';
 
 const INITIAL_FILTERS = { category: '', location: '', status: '' };
@@ -77,6 +78,7 @@ export default function App() {
   }
 
   const [selectedItemForClaim, setSelectedItemForClaim] = useState(null);
+  const [selectedItemForReportFound, setSelectedItemForReportFound] = useState(null);
 
   function handleAddItem(newItem) {
     setItems((prev) => [newItem, ...prev]);
@@ -90,6 +92,21 @@ export default function App() {
               ...item,
               status: 'Claimed',
               claimedBy: claimData.claimedBy,
+            }
+          : item
+      )
+    );
+  }
+
+  function handleReportFoundItem(itemId, foundData) {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              status: 'Found',
+              location: foundData.location || item.location,
+              founder: foundData.founder,
             }
           : item
       )
@@ -184,7 +201,8 @@ export default function App() {
           items={filteredItems}
           isLoading={isLoading}
           onClearFilters={handleClearFilters}
-          onSelectItem={(item) => setSelectedItemForClaim(item)}
+          onClaimItem={(item) => setSelectedItemForClaim(item)}
+          onReportFoundItem={(item) => setSelectedItemForReportFound(item)}
         />
 
         {/* Footer dots */}
@@ -210,12 +228,21 @@ export default function App() {
         />
       )}
 
-      {/* Claim Item Modal */}
+      {/* Claim Item Modal (for Found items only) */}
       {selectedItemForClaim && (
         <ClaimModal
           item={selectedItemForClaim}
           onClaim={handleClaimItem}
           onClose={() => setSelectedItemForClaim(null)}
+        />
+      )}
+
+      {/* Report Found Modal (for Lost items only) */}
+      {selectedItemForReportFound && (
+        <ReportFoundModal
+          item={selectedItemForReportFound}
+          onFoundReported={handleReportFoundItem}
+          onClose={() => setSelectedItemForReportFound(null)}
         />
       )}
     </div>
