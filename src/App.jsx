@@ -6,6 +6,7 @@ import SearchBar from './components/SearchBar';
 import FilterPanel from './components/FilterPanel';
 import ItemGrid from './components/ItemGrid';
 import PostItemForm from './components/PostItemForm';
+import ClaimModal from './components/ClaimModal';
 import RetroCursor from './components/RetroCursor';
 
 const INITIAL_FILTERS = { category: '', location: '', status: '' };
@@ -75,8 +76,24 @@ export default function App() {
     setSortBy('newest');
   }
 
+  const [selectedItemForClaim, setSelectedItemForClaim] = useState(null);
+
   function handleAddItem(newItem) {
     setItems((prev) => [newItem, ...prev]);
+  }
+
+  function handleClaimItem(itemId, claimData) {
+    setItems((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? {
+              ...item,
+              status: 'Claimed',
+              claimedBy: claimData.claimedBy,
+            }
+          : item
+      )
+    );
   }
 
   const lostCount    = items.filter((i) => i.status === 'Lost').length;
@@ -167,6 +184,7 @@ export default function App() {
           items={filteredItems}
           isLoading={isLoading}
           onClearFilters={handleClearFilters}
+          onSelectItem={(item) => setSelectedItemForClaim(item)}
         />
 
         {/* Footer dots */}
@@ -184,11 +202,20 @@ export default function App() {
         </p>
       </main>
 
-      {/* Modal */}
+      {/* Post Item Modal */}
       {showForm && (
         <PostItemForm
           onAdd={handleAddItem}
           onClose={() => setShowForm(false)}
+        />
+      )}
+
+      {/* Claim Item Modal */}
+      {selectedItemForClaim && (
+        <ClaimModal
+          item={selectedItemForClaim}
+          onClaim={handleClaimItem}
+          onClose={() => setSelectedItemForClaim(null)}
         />
       )}
     </div>

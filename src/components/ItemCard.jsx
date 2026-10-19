@@ -64,19 +64,28 @@ function formatDate(dateStr) {
 
 /**
  * Individual item card — retro PacMan arcade style.
+ * Clicking available (Lost/Found) items triggers the claim flow.
+ * Already Claimed items show a locked badge and cannot be clicked.
  */
-export default function ItemCard({ item }) {
-  const { id, name, category, location, date, status, image, description } = item;
+export default function ItemCard({ item, onSelect }) {
+  const { id, name, category, location, date, status, image, description, claimedBy } = item;
   const imageSrc = image || 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80';
   const { badge, glow, ghost } = getStatusStyles(status);
+  const isClaimed = status === 'Claimed';
 
   return (
     <article
+      onClick={() => {
+        if (!isClaimed && onSelect) {
+          onSelect(item);
+        }
+      }}
       className={`
         bg-pacman-card border-2 border-pacman-border overflow-hidden
-        transition-all duration-200
-        hover:border-pacman-yellow hover:${glow} hover:-translate-y-1
-        flex flex-col group cursor-default
+        transition-all duration-200 flex flex-col group
+        ${isClaimed 
+          ? 'opacity-70 cursor-not-allowed border-gray-800' 
+          : `hover:border-pacman-yellow hover:${glow} hover:-translate-y-1 cursor-pointer`}
       `}
     >
       {/* Image */}
@@ -85,7 +94,9 @@ export default function ItemCard({ item }) {
           src={imageSrc}
           alt={name}
           loading="lazy"
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105 opacity-85 group-hover:opacity-100"
+          className={`w-full h-full object-cover transition-transform duration-500 ${
+            isClaimed ? 'grayscale opacity-50' : 'group-hover:scale-105 opacity-85 group-hover:opacity-100'
+          }`}
           onError={(e) => {
             e.target.src = 'https://images.unsplash.com/photo-1584438784894-089d6a62b8fa?auto=format&fit=crop&w=600&q=80';
           }}
@@ -112,11 +123,22 @@ export default function ItemCard({ item }) {
             {getCategoryIcon(category)} {category}
           </span>
         </div>
+
+        {/* Claimed Overlay watermark if already claimed */}
+        {isClaimed && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/60">
+            <span className="font-pixel text-[0.6rem] text-pacman-pinky border-2 border-pacman-pinky px-3 py-1.5 -rotate-12 bg-black/80 shadow-ghost-pink">
+              🔒 ALREADY CLAIMED
+            </span>
+          </div>
+        )}
       </div>
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 border-t-2 border-pacman-border">
-        <h3 className="font-pixel text-pacman-yellow text-[0.6rem] mb-2 line-clamp-1 leading-relaxed group-hover:glow-yellow transition-all">
+        <h3 className={`font-pixel text-[0.6rem] mb-2 line-clamp-1 leading-relaxed transition-all ${
+          isClaimed ? 'text-gray-400' : 'text-pacman-yellow group-hover:glow-yellow'
+        }`}>
           {name}
         </h3>
 
@@ -126,15 +148,42 @@ export default function ItemCard({ item }) {
           </p>
         )}
 
-        {/* Meta */}
-        <div className="mt-auto pt-3 border-t border-pacman-border/50 flex flex-col gap-1.5">
-          <div className="flex items-center gap-2 font-vt text-pacman-inky text-base">
-            <span>📍</span>
-            <span className="truncate">{location}</span>
+        {/* Claimed Details banner if claimed */}
+        {isClaimed && claimedBy && (
+          <div className="mb-3 p-2 bg-pacman-pinky/10 border border-pacman-pinky/30 font-vt text-sm text-pacman-pinky">
+            <p>✓ Claimed by: {claimedBy.name || 'Student'} ({claimedBy.regNo})</p>
+            <p>🏠 Room: {claimedBy.roomNo}</p>
           </div>
-          <div className="flex items-center gap-2 font-vt text-pacman-yellow/60 text-base">
-            <span>📅</span>
-            <span>{formatDate(date)}</span>
+        )}
+
+        {/* Meta & Claim CTA */}
+        <div className="mt-auto pt-3 border-t border-pacman-border/50 flex flex-col gap-2">
+          <div className="flex items-center justify-between text-base font-vt">
+            <div className="flex items-center gap-1.5 text-pacman-inky truncate">
+              <span>📍</span>
+              <span className="truncate">{location}</span>
+            </div>
+            <div className="flex items-center gap-1 text-pacman-yellow/60 flex-shrink-0">
+              <span>📅</span>
+              <span>{formatDate(date)}</span>
+            </div>
+          </div>
+
+          {/* Action Prompt */}
+          <div className="pt-2">
+            {isClaimed ? (
+              <div className="w-full text-center py-1.5 font-pixel text-[0.4rem] text-gray-500 border border-gray-800 bg-gray-950">
+                LOCKED / CLAIMED
+              </div>
+            ) : (
+              <button
+                type="button"
+                className="w-full py-1.5 font-pixel text-[0.45rem] bg-black text-pacman-yellow border border-pacman-border group-hover:border-pacman-yellow group-hover:bg-pacman-yellow group-hover:text-black transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>🔑</span>
+                <span>CLICK TO CLAIM ITEM</span>
+              </button>
+            )}
           </div>
         </div>
       </div>

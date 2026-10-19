@@ -6,7 +6,7 @@ import EmptyState from './EmptyState';
 /**
  * Responsive item grid with PacMan loading and empty states.
  */
-export default function ItemGrid({ items, isLoading, onClearFilters }) {
+export default function ItemGrid({ items, isLoading, onClearFilters, onSelectItem }) {
   if (isLoading) {
     return (
       <div>
@@ -33,7 +33,7 @@ export default function ItemGrid({ items, isLoading, onClearFilters }) {
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
       {items.map((item) => (
-        <ItemCard key={item.id} item={item} />
+        <ItemCard key={item.id} item={item} onSelect={onSelectItem} />
       ))}
     </div>
   );
