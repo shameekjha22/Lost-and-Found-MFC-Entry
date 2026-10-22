@@ -36,6 +36,13 @@ export default function ReportFoundModal({ item, onFoundReported, onClose }) {
     if (e.target === modalRef.current) onClose();
   };
 
+  // Valid 3-letter program codes per VIT Bhopal
+  const VALID_PROGRAMS = [
+    'BCE','BIT','BBI','BCI','BCB','BKT','BDS',
+    'BAI','BMI','BIO','BEC','ECE','BVD','BEE','EEE','BME','BCL',
+  ];
+  const REG_NO_REGEX = /^(2[2-6])[A-Z]{3}\d{4}$/;
+
   const validate = () => {
     const errs = {};
     if (!founderName.trim()) {
@@ -43,6 +50,16 @@ export default function ReportFoundModal({ item, onFoundReported, onClose }) {
     }
     if (!founderRegNo.trim()) {
       errs.regNo = 'Registration number is required.';
+    } else {
+      const val = founderRegNo.trim().toUpperCase();
+      if (!REG_NO_REGEX.test(val)) {
+        errs.regNo = 'Invalid format. Use YYPPP#### — e.g. 26BCE2412';
+      } else {
+        const program = val.slice(2, 5);
+        if (!VALID_PROGRAMS.includes(program)) {
+          errs.regNo = `'${program}' is not a valid program code.`;
+        }
+      }
     }
     if (!founderRoomNo.trim()) {
       errs.roomNo = 'Your room / hostel number is required.';
@@ -159,10 +176,10 @@ export default function ReportFoundModal({ item, onFoundReported, onClose }) {
                 type="text"
                 value={founderRegNo}
                 onChange={(e) => {
-                  setFounderRegNo(e.target.value);
+                  setFounderRegNo(e.target.value.toUpperCase());
                   if (errors.regNo) setErrors((prev) => ({ ...prev, regNo: '' }));
                 }}
-                placeholder="e.g. 23BCE10980"
+                placeholder="e.g. 26BCE2412"
                 className="w-full bg-black border-2 border-pacman-border focus:border-pacman-inky text-pacman-yellow placeholder-pacman-yellow/20 font-vt text-xl px-3 py-2 uppercase outline-none"
               />
               {errors.regNo && (

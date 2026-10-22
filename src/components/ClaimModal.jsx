@@ -34,6 +34,13 @@ export default function ClaimModal({ item, onClaim, onClose }) {
     if (e.target === modalRef.current) onClose();
   };
 
+  // Valid 3-letter program codes per VIT Bhopal
+  const VALID_PROGRAMS = [
+    'BCE','BIT','BBI','BCI','BCB','BKT','BDS',
+    'BAI','BMI','BIO','BEC','ECE','BVD','BEE','EEE','BME','BCL',
+  ];
+  const REG_NO_REGEX = /^(2[2-6])[A-Z]{3}\d{4}$/;
+
   const validate = () => {
     const errs = {};
     if (!studentName.trim()) {
@@ -41,8 +48,21 @@ export default function ClaimModal({ item, onClaim, onClose }) {
     }
     if (!regNo.trim()) {
       errs.regNo = 'Registration number is required.';
-    } else if (regNo.trim().length < 5) {
-      errs.regNo = 'Please enter a valid Registration No.';
+    } else {
+      const val = regNo.trim().toUpperCase();
+      if (!REG_NO_REGEX.test(val)) {
+        errs.regNo = 'Invalid format. Use YYPPP#### — e.g. 26BCE2412';
+      } else {
+        const program = val.slice(2, 5);
+        if (!VALID_PROGRAMS.includes(program)) {
+          errs.regNo = `'${program}' is not a valid program code.`;
+        } else if (
+          item.founder?.regNo &&
+          val === item.founder.regNo.toUpperCase()
+        ) {
+          errs.regNo = 'You cannot claim an item you reported as found.';
+        }
+      }
     }
     if (!roomNo.trim()) {
       errs.roomNo = 'Room number / Hostel details required.';
@@ -152,10 +172,10 @@ export default function ClaimModal({ item, onClaim, onClose }) {
               type="text"
               value={regNo}
               onChange={(e) => {
-                setRegNo(e.target.value);
+                setRegNo(e.target.value.toUpperCase());
                 if (errors.regNo) setErrors((prev) => ({ ...prev, regNo: '' }));
               }}
-              placeholder="e.g. 23BCE10452"
+              placeholder="e.g. 26BCE2412"
               className="w-full bg-black border-2 border-pacman-border focus:border-pacman-yellow text-pacman-yellow placeholder-pacman-yellow/20 font-vt text-xl px-3 py-2 uppercase outline-none"
             />
             {errors.regNo && (
